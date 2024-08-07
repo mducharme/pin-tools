@@ -60,7 +60,9 @@ const config = {
   outputFileName: argv.outputFileName,
   pageSize: pageSize,
   resolution: argv.resolution,
-  imageSize: imageSize
+  imageSize: imageSize,
+  printableAreaSize: 0.875,
+  debugMode: false
 };
 
 // Generate PDF with the specified configuration

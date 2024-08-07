@@ -3,35 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF Generator</title>
+  <title>Pins Generator</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Pins Generator</h1>
-  <form id="pdf-form" action="/generate-pdf" method="post" enctype="multipart/form-data">
-    <label for="image">Image File:</label>
-    <input type="file" id="image" name="image" accept="image/*" required><br>
-    <small>Must be square. Ideal dimension = pin size X resolution (ex: 1.1875 * 600 = 712px)</small><br><br>
+  <div class="container">
+    <h1>📌 Pins Generator 📌</h1>
+    <form id="pdf-form" action="/generate-pdf" method="post" enctype="multipart/form-data">
 
-    <label for="paddingInches">Padding (inches):</label>
-    <input type="number" step="0.001" id="paddingInches" name="paddingInches" value="0.125" required><br><br>
+      <p style="width:100%;text-align:center;">Drag and drop an image file here</p>
+      <div id="drop-area">
+        <input type="file" id="image" name="image" accept="image/*" required hidden>
+        <canvas id="image-canvas" width="500" height="500"></canvas><br>
+      </div>
+      <div id="image-info"></div>
 
-    <label for="pageWidth">Page Width (inches):</label>
-    <input type="number" step="0.1" id="pageWidth" name="pageWidth" value="8.5" required><br><br>
+      <button id="advanced-options-toggle">Show advanced options 🔽</button><br><br>
+      <div id="advanced-options" style="display:none;">
+        <label for="paddingInches">Spacing (inches):</label>
+        <input type="number" step="0.001" id="paddingInches" name="paddingInches" value="0.125" required>
+        <small class="notes">The padding, in inches, between the pins.</small><br><br>
 
-    <label for="pageHeight">Page Height (inches):</label>
-    <input type="number" step="0.1" id="pageHeight" name="pageHeight" value="11" required><br><br>
+        <label for="pageSize">Page Size:</label>
+        <select id="pageSize" name="pageSize" required>
+          <option value="LETTER" data-width="8.5" data-height="11">LETTER (8.5 x 11 inches)</option>
+          <option value="A4" data-width="8.27" data-height="11.69">A4 (8.27 x 11.69 inches)</option>
+          <option value="LEGAL" data-width="8.5" data-height="14">LEGAL (8.5 x 14 inches)</option>
+          <option value="CUSTOM">CUSTOM</option>
+        </select><br><br>
 
-    <label for="resolution">Resolution (dpi):</label>
-    <input type="number" id="resolution" name="resolution" value="600" required><br><br>
+        <div id="customPageSize" style="display:none;">
+          <label for="pageWidth">Page Width (inches):</label>
+          <input type="number" step="0.01" id="pageWidth" name="pageWidth" value="8.5"><br><br>
 
-    <label for="imageSize">Pin Size (inches):</label>
-    <input type="number" step="0.0001" id="imageSize" name="imageSize" value="1.1875" required><br><br>
+          <label for="pageHeight">Page Height (inches):</label>
+          <input type="number" step="0.01" id="pageHeight" name="pageHeight" value="11"><br><br>
+        </div>
 
-    <label for="outputFileName">Output File Name:</label>
-    <input type="text" id="outputFileName" name="outputFileName" value="pins.pdf" required><br><br>
+        <label for="resolution">Resolution (dpi):</label>
+        <select id="resolution" name="resolution" required>
+          <option value="150">150 dpi</option>
+          <option value="300">300 dpi</option>
+          <option value="600" selected>600 dpi</option>
+          <option value="1200">1200 dpi</option>
+        </select><br><br>
 
-    <button type="submit">Generate PDF</button>
-  </form>
+        <label for="imageSize">Total pin Size (inches):</label>
+        <input type="number" step="0.0001" id="imageSize" name="imageSize" value="1.1313" required><br><br>
+
+        <label for="printableAreaSize">Pin Size (inches):</label>
+        <input type="number" step="0.0001" id="imageSize" name="imageSize" value="1.1313" required><br><br>
+
+        <label for="outputFileName">Output File Name:</label>
+        <input type="text" id="outputFileName" name="outputFileName" value="pins.pdf" required><br><br>
+
+        <label for="debugMode">Debug mode?</label>
+        <input type="checkbox" id="debugMode" name="debugMode"><br><br>
+      </div>
+      <button type="submit">Generate PDF 📄</button>
+      <div class="feedback" style="width:100%;text-align:center;"></div>
+    </form>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
 
