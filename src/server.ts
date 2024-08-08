@@ -1,34 +1,36 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import multer from 'multer';
 import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { generatePDF } from './generatepdf.js'; // Import your PDF generation script
+import { Config } from './config';
+import { generatePDF } from './generatepdf'; // Import your PDF generation script
+
 
 const app = express();
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage })
+const upload = multer();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/generate-pdf', upload.single('image'), async (req, res) => {
-  const { paddingInches, outputFileName, pageWidth, pageHeight, resolution, imageSize, debugMode } = req.body;
-  const image = req.file.buffer;
 
-  const config = {
+app.post('/generate-pdf', upload.single('image'), async (req: Request, res: Response) => {
+  const { paddingInches, outputFileName, pageWidth, pageHeight, resolution, imageSize, debugMode } = req.body;
+  const image = req.file?.buffer;
+
+  if (!image) {
+    return res.status(400).send('No image file uploaded.');
+  }
+
+  const config: Config = {
     image,
     paddingInches: parseFloat(paddingInches),
     outputFileName,
     pageSize: { width: parseFloat(pageWidth), height: parseFloat(pageHeight) },
     resolution: parseInt(resolution, 10),
-    imageSize: parseFloat(imageSize),
+    imageSize: imageSize,
     printableAreaSize: 0.875,
-    debugMode: debugMode
+    debugMode: debugMode === 'true'
   };
 
   try {
@@ -38,10 +40,11 @@ app.post('/generate-pdf', upload.single('image'), async (req, res) => {
         console.error(err);
       }
       fs.unlinkSync(config.outputFileName); // Delete the output file after sending it
-      //fs.unlinkSync(imageUrl); // Delete the uploaded image after processing
     });
   } catch (error) {
-    console.error(`Error generating PDF: ${error.message}`);
+    if (error instanceof Error) {
+      console.error(`Error generating PDF: ${error.message}`);
+    }
     res.status(500).send('An error occurred while generating the PDF.');
   }
 });
