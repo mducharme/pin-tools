@@ -6,5 +6,4 @@ export interface Config {
     resolution: number;
     imageSize: number;
     printableAreaSize: number;
-    debugMode: boolean;
   }

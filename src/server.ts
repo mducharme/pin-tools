@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.post('/generate-pdf', upload.single('image'), async (req: Request, res: Response) => {
-  const { paddingInches, outputFileName, pageWidth, pageHeight, resolution, imageSize, debugMode } = req.body;
+  const { paddingInches, outputFileName, pageWidth, pageHeight, resolution, imageSize } = req.body;
   const image = req.file?.buffer;
 
   if (!image) {
@@ -29,8 +29,7 @@ app.post('/generate-pdf', upload.single('image'), async (req: Request, res: Resp
     pageSize: { width: parseFloat(pageWidth), height: parseFloat(pageHeight) },
     resolution: parseInt(resolution, 10),
     imageSize: imageSize,
-    printableAreaSize: 0.875,
-    debugMode: debugMode === 'true'
+    printableAreaSize: 0.875
   };
 
   try {

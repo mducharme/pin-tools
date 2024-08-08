@@ -58,8 +58,7 @@ async function main() {
       pageSize: argv.pageSize,
       resolution: argv.resolution,
       imageSize: argv.imageSize,
-      printableAreaSize: 0.875,
-      debugMode: false
+      printableAreaSize: 0.875
     };
 
     await generatePDF(config);

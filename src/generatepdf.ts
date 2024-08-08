@@ -6,9 +6,7 @@ import { Config } from './config';
 async function fetchAndEmbedImage(
   pdfDoc: PDFDocument,
   imageBytes: ArrayBuffer,
-  imageSize: number,
-  printableAreaSize: number,
-  debugMode: boolean
+  imageSize: number
 ): Promise<PDFImage> {
   if (imageSize <= 0) {
     throw new Error('Invalid image size parameter (must be an integer bigger than 0)');
@@ -29,19 +27,12 @@ async function fetchAndEmbedImage(
   ctx.clip();
   ctx.drawImage(image, 0, 0, imageSize, imageSize);
 
+  // Always add a black outline for an easier cutting process
   ctx.beginPath();
   ctx.arc(imageSize / 2, imageSize / 2, (imageSize / 2) - 2, 0, Math.PI * 2);
   ctx.lineWidth = 4;
   ctx.strokeStyle = 'black';
   ctx.stroke();
-
-  if (debugMode) {
-    ctx.beginPath();
-    ctx.arc(imageSize / 2, imageSize / 2, (printableAreaSize / 2) - 0.5, 0, Math.PI * 2);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = 'green';
-    ctx.stroke();
-  }
 
   const circularImageBuffer = canvas.toBuffer();
   return pdfDoc.embedPng(circularImageBuffer);
@@ -54,7 +45,6 @@ export async function generatePDF(config: Config): Promise<void> {
     imageSize = 1.1313,
     paddingInches = 0.125,
     printableAreaSize = 0.875,
-    debugMode = false,
     outputFileName = 'output.pdf',
   } = config;
 
@@ -70,7 +60,6 @@ export async function generatePDF(config: Config): Promise<void> {
 
   const imageSizeInPoints = imageSize * dpi;
   const padding = paddingInches * dpi;
-  const printableAreaSizeInPoints = printableAreaSize * dpi;
   const totalImageSize = imageSizeInPoints + padding;
 
   const cols = Math.floor(pageWidth / totalImageSize);
@@ -80,7 +69,7 @@ export async function generatePDF(config: Config): Promise<void> {
   const marginY = (pageHeight - (rows * totalImageSize) + padding) / 2;
 
   try {
-    const image = await fetchAndEmbedImage(pdfDoc, config.image, imageSizeInPoints, printableAreaSizeInPoints, debugMode);
+    const image = await fetchAndEmbedImage(pdfDoc, config.image, imageSizeInPoints);
 
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
