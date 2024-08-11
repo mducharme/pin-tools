@@ -1,9 +1,16 @@
 export interface Config {
     image: ArrayBuffer;
-    paddingInches: number;
-    outputFileName: string;
+    imageOptions: {
+      scale: number,
+      backgroundColor: string,
+      panX: number,
+      panY: number,
+      quantity: number
+    };
     pageSize: { width: number; height: number };
+    padding: number;
     resolution: number;
     imageSize: number;
-    printableAreaSize: number;
+    pinSize: number;
+    outputFileName: string;
   }

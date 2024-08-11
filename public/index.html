@@ -10,31 +10,10 @@
   <div class="container">
     <h1>📌 Pins Generator 📌</h1>
     <form id="pdf-form" action="/generate-pdf" method="post" enctype="multipart/form-data">
-
-      <p style="width:100%;text-align:center;">Drag and drop an image file here</p>
-      <small style="width:100%;text-align:center;"><em>Ideal image size: <span id="ideal-size">678x678</span> px</em></small>
-      <div id="drop-area">
-        <input type="file" id="image" name="image" accept="image/*" required hidden>
-        <canvas id="image-canvas" width="500" height="500"></canvas><br>
-      </div>
       
-      <div id="guides"  style="display:none;">
-        <span id="outside-guide">Outside: 1.1313" (678px)</span><br>
-        <span id="pin-guide">Pin: 0.875" (494px)</span> 
-      </div>
-
-      <div id="image-info"></div>
-
-      <div>
-        <label for="show-guides">Show guides?</label>
-        <input type="checkbox" id="show-guides" value="1"><br><br>
-      </div>
-      <button id="advanced-options-toggle">Show advanced options 🔽</button><br><br>
+      <button id="advanced-options-toggle">Show page options 🔽</button><br><br>
       <div id="advanced-options" style="display:none;">
-        <label for="paddingInches">Spacing (inches):</label>
-        <input type="number" step="0.001" id="paddingInches" name="paddingInches" value="0.125" required>
-        <small class="notes">The padding, in inches, between the pins.</small><br><br>
-
+        <!-- Global Page Options -->
         <label for="page-size">Page Size:</label>
         <select id="page-size" name="pageSize" required>
           <option value="LETTER" data-width="8.5" data-height="11">LETTER (8.5 x 11 inches)</option>
@@ -43,13 +22,17 @@
           <option value="CUSTOM">CUSTOM</option>
         </select><br><br>
 
-        <div id="customPageSize" style="display:none;">
-          <label for="pageWidth">Page Width (inches):</label>
-          <input type="number" step="0.01" id="pageWidth" name="pageWidth" value="8.5"><br><br>
+        <div id="custom-page-size" style="display:none;">
+          <label for="page-width">Page Width (inches):</label>
+          <input type="number" step="0.01" id="page-width" name="pageWidth" value="8.5"><br><br>
 
-          <label for="pageHeight">Page Height (inches):</label>
-          <input type="number" step="0.01" id="pageHeight" name="pageHeight" value="11"><br><br>
+          <label for="page-height">Page Height (inches):</label>
+          <input type="number" step="0.01" id="page-height" name="pageHeight" value="11"><br><br>
         </div>
+
+        <label for="padding">Padding (inches):</label>
+        <input type="number" step="0.005" id="padding" name="padding" value="0.125" required>
+        <small class="notes">The padding, in inches, between the pins.</small><br><br>
 
         <label for="resolution">Resolution (dpi):</label>
         <select id="resolution" name="resolution" required>
@@ -58,18 +41,62 @@
           <option value="600" selected>600 dpi</option>
           <option value="1200">1200 dpi</option>
         </select><br><br>
-
+        
         <label for="image-size">Total pin Size (inches):</label>
-        <input type="number" step="0.0001" id="image-size" name="imageSize" value="1.1313" required><br><br>
+        <input type="number" step="0.0001" id="image-size" name="imageSize" value="1.1313" required><br>
         <small class="notes">The full image size, including the required bleeding.</small><br><br>
 
-        <label for="printable-area-size">Pin Size (inches):</label>
-        <input type="number" step="0.0001" id="printable-area-size" name="printableAreaSize" value="0.875" required><br><br>
+        <label for="pin-size">Pin Size (inches):</label>
+        <input type="number" step="0.0001" id="pin-size" name="pinSize" value="0.875" required><br>
         <small class="notes">The actual pin size (the front of the pin)</small><br><br>
 
         <label for="output-file-name">Output File Name:</label>
         <input type="text" id="output-file-name" name="outputFileName" value="pins.pdf" required><br><br>
       </div>
+      
+      <!-- Image Upload Section -->
+      <div id="image-container">
+        <div class="image-group" data-image-index="0">
+          <p style="width:100%;text-align:center;">Drag and drop an image file here</p>
+          <small style="width:100%;text-align:center;"><em>Ideal image size: <span id="ideal-size">678x678</span> px</em></small>
+          <div id="drop-area">
+            <input type="file" id="image" name="images[]" xname="image" accept="image/*" required hidden>
+            <canvas id="image-canvas" class="image-canvas" width="500" height="500"></canvas><br>
+            <input type="hidden" name="canvasSize" value="500">
+          </div>
+          
+          <div id="controls" style="width:100%">
+            <!--<label for="image-scale">Scale %</label>-->
+            <input type="range" id="image-scale" name="images[0][scale]" xname="imageScale" min="0.1" max="2" step="0.01" value="1"><br>
+
+            <label for="image-background-color">Background color</label>
+            <input type="color" id="image-background-color"xname="images[0][backgroundColor]" xname="imageBackgroundColor" value="#FFFFFF"><br><br>
+
+            <label for="image-pan-x">Pan</label>
+            <input type="number" id="image-pan-x" name="images[0][panX]" xname="imagePanX" min="-2000" max="2000" value="0" style="width:80px;"> x 
+            <input type="number" id="image-pan-y" name="images[0][panY]" xname="imagePanY" min="-2000" max="2000" value="0" style="width:80px;"><br><br>
+
+            <label for="quantity">Quantity</label>
+            <input type="number" id="quantity" name="images[0][quantity]" xname="quantity" value="1" min="1" max="100" required><br>
+            <small class="notes">The maximum amount of this pin on the page. Limited by actual possible max.</small><br><br>
+          </div>
+
+          <div id="guides" style="display:none;">
+            <span id="outside-guide">Outside: 1.1313" (678px)</span><br>
+            <span id="pin-guide">Pin: 0.875" (494px)</span> 
+          </div>
+
+          <div id="image-info"></div>
+
+          <div>
+            <label for="show-guides">Show guides?</label>
+            <input type="checkbox" id="show-guides" name="show-guides" value="1"><br><br>
+          </div>
+
+        </div>
+      </div>
+      
+      <button type="button" id="add-image-button">Add Another Image</button><br><br>
       <button type="submit">Generate PDF 📄</button>
       <div class="feedback"></div>
     </form>
@@ -77,4 +104,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-

@@ -4,9 +4,8 @@ import fs from 'fs';
 import { Config } from './config';
 import { generatePDF } from './generatepdf'; // Import your PDF generation script
 
-
 const app = express();
-const storage = multer.memoryStorage();
+//const storage = multer.memoryStorage();
 const upload = multer();
 
 app.use(express.static('public'));
@@ -15,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.post('/generate-pdf', upload.single('image'), async (req: Request, res: Response) => {
-  const { paddingInches, outputFileName, pageWidth, pageHeight, resolution, imageSize } = req.body;
+  const { padding, outputFileName, pageWidth, pageHeight, resolution, imageSize, pinSize, imageScale,  imageBackgroundColor, imagePanX, imagePanY, quantity} = req.body;
   const image = req.file?.buffer;
 
   if (!image) {
@@ -24,12 +23,19 @@ app.post('/generate-pdf', upload.single('image'), async (req: Request, res: Resp
 
   const config: Config = {
     image,
-    paddingInches: parseFloat(paddingInches),
-    outputFileName,
+    imageOptions: {
+      scale:parseFloat(imageScale), 
+      backgroundColor: imageBackgroundColor, 
+      panX: parseFloat(imagePanX), 
+      panY: parseFloat(imagePanY),
+      quantity: parseInt(quantity)
+    },
     pageSize: { width: parseFloat(pageWidth), height: parseFloat(pageHeight) },
+    padding: parseFloat(padding),
     resolution: parseInt(resolution, 10),
     imageSize: imageSize,
-    printableAreaSize: 0.875
+    pinSize: pinSize,
+    outputFileName,
   };
 
   try {

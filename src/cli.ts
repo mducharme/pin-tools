@@ -11,7 +11,7 @@ const argv = yargs(hideBin(process.argv))
     type: 'string',
     demandOption: true,
   })
-  .option('paddingInches', {
+  .option('padding', {
     alias: 'p',
     description: 'Spacing between images in inches',
     type: 'number',
@@ -40,7 +40,7 @@ const argv = yargs(hideBin(process.argv))
     alias: 'z',
     description: 'Image size in inches (width and height)',
     type: 'number',
-    default: 1.1875
+    default: 1.1313
   })
   .parseSync();
 
@@ -53,12 +53,19 @@ async function main() {
 
     const config: Config = {
       image: imageBytes,
-      paddingInches: argv.paddingInches,
+      imageOptions: { 
+        scale: 1, 
+        backgroundColor: 'white', 
+        panX: 0, 
+        panY: 0,
+        quantity: 100 
+      },
+      padding: argv.padding,
       outputFileName: argv.outputFileName,
       pageSize: argv.pageSize,
       resolution: argv.resolution,
       imageSize: argv.imageSize,
-      printableAreaSize: 0.875
+      pinSize: 0.875
     };
 
     await generatePDF(config);
