@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
 import fs from 'fs';
-import { Config, ImageOptions } from './config';
+import { Config } from './config';
 import { generatePDF } from './generatepdf';
 
 const app = express();
@@ -41,8 +41,6 @@ app.post('/generate-pdf', upload.array('images[]'), async (req: Request, res: Re
       quantity: parseInt(imageOptions[index].quantity)
     });
   });
-
-  console.log(config);
 
   try {
     await generatePDF(config);

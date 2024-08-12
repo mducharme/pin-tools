@@ -2,8 +2,7 @@ import fs from 'fs';
 import { PDFDocument, PDFImage } from 'pdf-lib';
 import { createCanvas, loadImage } from 'canvas';
 import { Config, ImageOptions } from './config';
-
-import sharp from 'sharp'; // Add sharp for image conversion
+import sharp from 'sharp';
 
 async function convertToPng(imageBytes: ArrayBuffer): Promise<Buffer> {
   return sharp(Buffer.from(imageBytes)).png().toBuffer();
@@ -11,26 +10,23 @@ async function convertToPng(imageBytes: ArrayBuffer): Promise<Buffer> {
 
 async function fetchAndEmbedImage(
   pdfDoc: PDFDocument,
-  imageData: ImageOptions,
-  imageSize: number
+  imageOptions: ImageOptions,
+  imageSizeInPoints: number
 ): Promise<PDFImage> {
-  if (imageSize <= 0) {
+  if (imageSizeInPoints <= 0) {
     throw new Error('Invalid image size parameter (must be an integer bigger than 0)');
   }
 
-  console.log(imageData);
   // Always convert to PNG if necessary (for webp images, for example)
-  const imageBuffer= await convertToPng(imageData.image);
-  console.debug(imageBuffer);
+  const imageBuffer= await convertToPng(imageOptions.image);
   const image = await loadImage(imageBuffer);
 
+  const ratio = imageSizeInPoints/500; // 500 is the canvas size that was used for the offset and scale calculations
+  const offsetX = imageOptions.offset.x * ratio;
+  const offsetY = imageOptions.offset.y * ratio;
+  const scale = imageOptions.scale * ratio;
 
-  const ratio = imageSize/500; // 500 is the canvas size that was used for the offset and scale calculations
-  const offsetX = imageData.offset.x * ratio;
-  const offsetY = imageData.offset.y * ratio;
-  const scale = imageData.scale * ratio;
-
-  const canvas = createCanvas(imageSize, imageSize);
+  const canvas = createCanvas(imageSizeInPoints, imageSizeInPoints);
   const ctx = canvas.getContext('2d');
 
   // Clear the canvas and draw the background color
@@ -38,7 +34,7 @@ async function fetchAndEmbedImage(
   ctx.beginPath();
   ctx.arc(canvas.width / 2, canvas.height / 2, canvas.height / 2, 0, Math.PI * 2);
   ctx.clip();
-  ctx.fillStyle = imageData.backgroundColor;
+  ctx.fillStyle = imageOptions.backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   const imgWidth = image.width * scale;
@@ -56,7 +52,7 @@ async function fetchAndEmbedImage(
   // Always add a black outline for an easier cutting process
   const outlineLineWidth = 4;
   ctx.beginPath();
-  ctx.arc(imageSize / 2, imageSize / 2, (imageSize / 2) - (outlineLineWidth/2), 0, Math.PI * 2);
+  ctx.arc(imageSizeInPoints / 2, imageSizeInPoints / 2, (imageSizeInPoints / 2) - (outlineLineWidth/2), 0, Math.PI * 2);
   ctx.lineWidth = outlineLineWidth;
   ctx.strokeStyle = 'black';
   ctx.stroke();
@@ -80,81 +76,58 @@ export async function generatePDF(config: Config): Promise<void> {
   const cols = Math.floor(pageWidth / totalImageSize);
   const rows = Math.floor(pageHeight / totalImageSize);
 
+  const pageQuantity = cols * rows;
+
   const marginX = (pageWidth - (cols * totalImageSize) + paddingInPoints) / 2;
   const marginY = (pageHeight - (rows * totalImageSize) + paddingInPoints) / 2;
 
-  try {
-    const pdfDoc = await PDFDocument.create();
+  const pdfDoc = await PDFDocument.create();
+  let currentPage = await pdfDoc.addPage([pageWidth, pageHeight]);
+  let currentImage = await fetchAndEmbedImage(pdfDoc, config.images[0], imageSizeInPoints);  
+ 
+  let totalRemaining = config.images.reduce((acc, image) => acc + image.quantity, 0);
+  let currentImageRemaining = config.images[0].quantity;
+  let currentPageRemaining = pageQuantity;
 
-    let page = createPage(pdfDoc);
-
-    const pageQuantity = cols * rows;
-    const totalQuantity = config.images.reduce((acc, image) => acc + image.quantity, 0);
+  let currentImageIndex = 0;
     
-    let image = await fetchAndEmbedImage(pdfDoc, config.images[0], imageSizeInPoints);  
+  while (totalRemaining > 0) {
 
-    let remainingPins = Math.min(totalQuantity, pageQuantity); // @todo support more pages instead of limiting the pins quantity
-    let currentRemainingPins = config.images[0].quantity;
-    let numInPage = 0;
+    for (let row = 0; row < rows && totalRemaining > 0; row++) {
+      for (let col = 0; col < cols && totalRemaining > 0; col++) {
 
-    let currentIndex = 0;
+        const x = marginX + col * totalImageSize;
+        const y = marginY + row * totalImageSize;
 
-    while (remainingPins > 0) {
+        currentPage.drawImage(currentImage, {
+          x: x,
+          y: currentPage.getHeight() - y - imageSizeInPoints,
+          width: imageSizeInPoints,
+          height: imageSizeInPoints,
+        });
 
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
+        totalRemaining--;
+        currentImageRemaining--;
+        currentPageRemaining--;
 
-          const x = marginX + col * totalImageSize;
-          const y = marginY + row * totalImageSize;
-          page.drawImage(image, {
-            x: x,
-            y: page.getHeight() - y - imageSizeInPoints,
-            width: imageSizeInPoints,
-            height: imageSizeInPoints,
-          });
-
-          remainingPins--;
-          currentRemainingPins--;
-          numInPage++;
-
-          if (currentRemainingPins <= 0) {
-            currentIndex++;
-            if (currentIndex >= config.images.length) {
-              break;
-            }
-            currentRemainingPins = config.images[currentIndex].quantity;
-            image = await fetchAndEmbedImage(pdfDoc, config.images[currentIndex], imageSizeInPoints);
-          }
-
-          if (numInPage >= pageQuantity) {
-            numInPage = 0;
-            page = createPage(pdfDoc);
-          }
-          if (remainingPins <= 0) {
+        if (currentImageRemaining <= 0) {
+          currentImageIndex++;
+          if (currentImageIndex >= config.images.length) {
             break;
           }
+          currentImageRemaining = config.images[currentImageIndex].quantity;
+          currentImage = await fetchAndEmbedImage(pdfDoc, config.images[currentImageIndex], imageSizeInPoints);
         }
-        if (remainingPins <= 0) {
-          break;
+
+        if (currentPageRemaining <= 0) {
+          currentPageRemaining = pageQuantity;
+          currentPage = await pdfDoc.addPage([pageWidth, pageHeight]);
         }
       }
     }
-
-    function createPage(pdfDoc: PDFDocument) {
-      console.log('Creating new page');
-      const page = pdfDoc.addPage([pageWidth, pageHeight]);
-      return page;
-    }
-
-    const pdfBytes = await pdfDoc.save();
-    fs.writeFileSync(config.outputFileName, pdfBytes);
-    console.log(`PDF saved as ${config.outputFileName}`);
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(`Error generating PDF: ${error.message}`);
-      console.error(error.stack);
-    }
   }
 
-
+  const pdfBytes = await pdfDoc.save();
+  fs.writeFileSync(config.outputFileName, pdfBytes);
+  console.log(`PDF saved as ${config.outputFileName}`);
 }

@@ -6,11 +6,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsc && node dist/server.js",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "cli": "node dist/cli.js"
+    "start": "node dist/server.js"
   },
   "author": "Mathieu Ducharme <mat@locomotive.ca>",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "canvas": "^2.11.2",
     "express": "^4.19.2",

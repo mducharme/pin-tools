@@ -108,11 +108,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const imageContainer = document.getElementById('image-container');
     
         addImageButton.addEventListener('click', () => {
+            
           const newIndex = document.querySelectorAll('.image-group').length;
           const newImageGroup = document.querySelector('.image-group').cloneNode(true);
-          
+          const newIndexInput = newImageGroup.querySelector('.image-index');
+
           // Update the input names with the new index
-          newImageGroup.querySelector('.image-index').value = newIndex;
+          newIndexInput.value = newIndex;
           const inputs = newImageGroup.querySelectorAll('input, select');
           inputs.forEach(input => {
             const name = input.getAttribute('name');
@@ -135,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
     
           imageContainer.appendChild(newImageGroup);
+          
           initializeImageOptions(newImageGroup);
         });
     }
