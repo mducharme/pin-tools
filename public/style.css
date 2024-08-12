@@ -83,13 +83,7 @@
         display: none;
     }
     
-    #image-info {
-        font-size: 14px;
-        color: #555;
-        margin-bottom: 20px;
-    }
-    
-    #drop-area {
+    .drop-area {
         border: 2px dashed #ccc;
         border-radius: 20px;
         width: 500px;
@@ -100,7 +94,7 @@
         text-align: center;
     }
 
-    #drop-area.highlight {
+    .drop-area.highlight {
         border-color: purple;
     }
 
@@ -108,13 +102,4 @@
         display: block;
         margin: 0;
         padding: 0;
-
-    }
-
-    #outside-guide {
-        color:red;
-    }
-
-    #pin-guide {
-        color: green;
     }

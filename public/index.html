@@ -31,7 +31,7 @@
         </div>
 
         <label for="padding">Padding (inches):</label>
-        <input type="number" step="0.005" id="padding" name="padding" value="0.125" required>
+        <input type="number" step="0.005" id="padding" name="padding" value="0.25" required>
         <small class="notes">The padding, in inches, between the pins.</small><br><br>
 
         <label for="resolution">Resolution (dpi):</label>
@@ -43,7 +43,7 @@
         </select><br><br>
         
         <label for="image-size">Total pin Size (inches):</label>
-        <input type="number" step="0.0001" id="image-size" name="imageSize" value="1.1313" required><br>
+        <input type="number" step="0.0001" id="image-size" name="imageSize" value="1.1875" required><br>
         <small class="notes">The full image size, including the required bleeding.</small><br><br>
 
         <label for="pin-size">Pin Size (inches):</label>
@@ -57,40 +57,32 @@
       <!-- Image Upload Section -->
       <div id="image-container">
         <div class="image-group" data-image-index="0">
+          <input class="image-index" name="imageOptions[0][index]" value="0" hidden>
           <p style="width:100%;text-align:center;">Drag and drop an image file here</p>
-          <small style="width:100%;text-align:center;"><em>Ideal image size: <span id="ideal-size">678x678</span> px</em></small>
-          <div id="drop-area">
-            <input type="file" id="image" name="images[]" xname="image" accept="image/*" required hidden>
+          <div class="drop-area">
+            <input class="image-input" type="file" id="image" name="images[]" accept="image/*" required hidden>
             <canvas id="image-canvas" class="image-canvas" width="500" height="500"></canvas><br>
             <input type="hidden" name="canvasSize" value="500">
           </div>
           
           <div id="controls" style="width:100%">
-            <!--<label for="image-scale">Scale %</label>-->
-            <input type="range" id="image-scale" name="images[0][scale]" xname="imageScale" min="0.1" max="2" step="0.01" value="1"><br>
+            <input type="range" class="image-scale" name="imageOptions[0][scale]" min="0.1" max="2" step="0.01" value="1"><br>
 
             <label for="image-background-color">Background color</label>
-            <input type="color" id="image-background-color"xname="images[0][backgroundColor]" xname="imageBackgroundColor" value="#FFFFFF"><br><br>
+            <input type="color" class="image-background-color" name="imageOptions[0][backgroundColor]" value="#FFFFFF"><br><br>
 
-            <label for="image-pan-x">Pan</label>
-            <input type="number" id="image-pan-x" name="images[0][panX]" xname="imagePanX" min="-2000" max="2000" value="0" style="width:80px;"> x 
-            <input type="number" id="image-pan-y" name="images[0][panY]" xname="imagePanY" min="-2000" max="2000" value="0" style="width:80px;"><br><br>
+            <label for="image-offset-x">Offset</label>
+            <input type="number" class="image-offset-x" name="imageOptions[0][offsetX]" min="-2000" max="2000" value="0" style="width:80px;"> x 
+            <input type="number" class="image-offset-y" name="imageOptions[0][offsetY]" min="-2000" max="2000" value="0" style="width:80px;"><br><br>
 
             <label for="quantity">Quantity</label>
-            <input type="number" id="quantity" name="images[0][quantity]" xname="quantity" value="1" min="1" max="100" required><br>
+            <input type="number" class="image-quantity" name="imageOptions[0][quantity]" value="1" min="1" max="100" required><br>
             <small class="notes">The maximum amount of this pin on the page. Limited by actual possible max.</small><br><br>
           </div>
 
-          <div id="guides" style="display:none;">
-            <span id="outside-guide">Outside: 1.1313" (678px)</span><br>
-            <span id="pin-guide">Pin: 0.875" (494px)</span> 
-          </div>
-
-          <div id="image-info"></div>
-
           <div>
             <label for="show-guides">Show guides?</label>
-            <input type="checkbox" id="show-guides" name="show-guides" value="1"><br><br>
+            <input type="checkbox" class="show-guides" name="show-guides" value="1"><br><br>
           </div>
 
         </div>

@@ -1,13 +1,21 @@
+export interface ImageOptions {
+  image: ArrayBuffer,
+  scale: number,
+  backgroundColor: string,
+  offset: {
+    x: number,
+    y: number
+  }
+  quantity: number
+}
+
+
 export interface Config {
-    image: ArrayBuffer;
-    imageOptions: {
-      scale: number,
-      backgroundColor: string,
-      panX: number,
-      panY: number,
-      quantity: number
+    images: Array<ImageOptions>;
+    pageSize: { 
+      width: number; 
+      height: number 
     };
-    pageSize: { width: number; height: number };
     padding: number;
     resolution: number;
     imageSize: number;
